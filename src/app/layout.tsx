@@ -4,7 +4,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: "Sur les pas d'Aurore - Site Officiel",
-  description: "Musique, concerts et univers artistique de Sur les pas d'Aurore",
+  description: "Bal folk, Animation et initiation aux danses Sur les pas d'Aurore",
 };
 
 export default function RootLayout({
@@ -38,7 +38,7 @@ export default function RootLayout({
         <footer className="bg-stone-900 text-stone-400 py-8 border-t border-stone-800 text-center text-sm">
           <div className="max-w-6xl mx-auto px-4">
             <p>© {new Date().getFullYear()} Sur les pas d'Aurore. Tous droits réservés.</p>
-            <p className="text-xs text-stone-500 mt-2">Administré en direct via Google Drive</p>
+            <p className="text-xs text-stone-500 mt-2">Contact</p>
           </div>
         </footer>
       </body>
