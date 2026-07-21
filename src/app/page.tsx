@@ -5,12 +5,56 @@ export const revalidate = 60;
 
 export default async function HomePage() {
   const info = await getInfoSite();
-  const evenements = await getEvenements();
+  const rawEvenements = await getEvenements();
   const activites = await getActivites();
 
-  const prochainsConcerts = evenements
-    .filter(e => e.statut === 'A venir')
-    .slice(0, 3);
+  // Date du jour (minuit)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Convertisseur universel de date (gère YYYY-MM-DD et DD/MM/YYYY)
+  const parseEvtDate = (dateStr: string): Date | null => {
+    if (!dateStr || dateStr.trim() === '' || dateStr === '...') return null;
+    const cleanStr = dateStr.trim();
+
+    // Format FR : DD/MM/YYYY ou DD-MM-YYYY
+    if (cleanStr.includes('/')) {
+      const parts = cleanStr.split('/');
+      if (parts.length === 3) {
+        return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+      }
+    }
+
+    // Format ISO : YYYY-MM-DD
+    if (cleanStr.includes('-')) {
+      const parts = cleanStr.split('-');
+      if (parts.length === 3 && parts[0].length === 4) {
+        return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+      }
+      if (parts.length === 3 && parts[2].length === 4) {
+        return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+      }
+    }
+
+    const d = new Date(cleanStr);
+    return isNaN(d.getTime()) ? null : d;
+  };
+
+  // Filtrer uniquement les ÉVÉNEMENTS FUTURS (>= Aujourd'hui)
+  const prochainsConcerts = rawEvenements
+    .filter(e => {
+      if (!e.titre || e.titre.trim() === '' || e.titre === 'Concert' || !e.date) return false;
+      const d = parseEvtDate(e.date);
+      if (!d) return true; // Par précaution si la date n'est pas au bon format
+      d.setHours(0, 0, 0, 0);
+      return d >= today;
+    })
+    .sort((a, b) => {
+      const dA = parseEvtDate(a.date)?.getTime() || 0;
+      const dB = parseEvtDate(b.date)?.getTime() || 0;
+      return dA - dB;
+    })
+    .slice(0, 3); // Garder les 3 plus proches
 
   return (
     <div className="space-y-16">
@@ -64,9 +108,9 @@ export default async function HomePage() {
                     {evt.date} {evt.heure && `• ${evt.heure}`}
                   </span>
                   <h3 className="text-xl font-bold text-stone-800 mt-3">{evt.titre}</h3>
-                  <p className="text-stone-600 text-sm mt-1">{evt.lieu} - {evt.ville}</p>
+                  <p className="text-stone-600 text-sm mt-1">{evt.lieu} {evt.ville && `- ${evt.ville}`}</p>
                 </div>
-                {evt.lienBilletterie && (
+                {evt.lienBilletterie && evt.lienBilletterie.trim() !== '' && evt.lienBilletterie !== '...' && (
                   <a 
                     href={evt.lienBilletterie} 
                     target="_blank" 
