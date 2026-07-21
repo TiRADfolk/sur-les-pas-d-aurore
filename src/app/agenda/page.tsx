@@ -152,7 +152,7 @@ export default async function AgendaPage() {
                         rel="noopener noreferrer" 
                         className="inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-500 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition shadow-sm"
                       >
-                        🔗 Accéder au lien / Billetterie
+                        🔗 Plus d'information
                       </a>
                     </div>
                   )}
