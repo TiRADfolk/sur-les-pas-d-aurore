@@ -8,8 +8,8 @@ export default async function ContactPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-8 py-4">
       <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold text-stone-900">Contact & Réservations</h1>
-        <p className="text-stone-600">Une question, un projet de concert ou une réservation ? Écrivez-nous !</p>
+        <h1 className="text-3xl font-bold text-stone-900">Contact</h1>
+        <p className="text-stone-600">Une question, un projet de bal ou d'animation Folk/Trad ? Écrivez-nous !</p>
       </div>
 
       <div className="bg-white rounded-2xl p-8 shadow-sm border border-stone-100 space-y-6">
@@ -38,9 +38,9 @@ export default async function ContactPage() {
         </div>
 
         <div className="border-t border-stone-100 pt-6">
-          <h2 className="font-bold text-stone-800 mb-2">Presse & Programmateurs</h2>
+          <h2 className="font-bold text-stone-800 mb-2">N'hésitez pas à nous contacter</h2>
           <p className="text-stone-600 text-sm leading-relaxed">
-            Pour recevoir notre fiche technique ou notre dossier de presse complet, contactez-nous directement par email.
+            Pour réserver votre bal privé ou public, contactez-nous directement par email.
           </p>
         </div>
       </div>
