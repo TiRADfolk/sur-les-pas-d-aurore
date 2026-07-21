@@ -11,15 +11,15 @@ export default async function AgendaPage() {
   return (
     <div className="space-y-12">
       <div className="border-b border-stone-200 pb-4">
-        <h1 className="text-3xl font-bold text-stone-900">Agenda & Concerts</h1>
-        <p className="text-stone-500 text-sm mt-1">Découvrez où et quand venir nous écouter live</p>
+        <h1 className="text-3xl font-bold text-stone-900">Agenda & Bals</h1>
+        <p className="text-stone-500 text-sm mt-1">Découvrez où et quand venir nous voir live et danser</p>
       </div>
 
-      {/* CONCERTS À VENIR */}
+      {/* DATES À VENIR */}
       <section className="space-y-6">
         <h2 className="text-xl font-bold text-stone-800 flex items-center gap-2">
           <span className="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
-          Concerts à venir
+          Prochaines dates
         </h2>
 
         {aVenir.length === 0 ? (
@@ -60,7 +60,7 @@ export default async function AgendaPage() {
       {/* CONCERTS PASSÉS */}
       {passes.length > 0 && (
         <section className="space-y-6 pt-6">
-          <h2 className="text-xl font-bold text-stone-800 border-b border-stone-200 pb-3">Concerts passés</h2>
+          <h2 className="text-xl font-bold text-stone-800 border-b border-stone-200 pb-3">Oh dommage c'est passé</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 opacity-80">
             {passes.map((evt) => (
               <div key={evt.id} className="bg-stone-100 rounded-xl p-4 border border-stone-200">
