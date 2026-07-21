@@ -38,7 +38,7 @@ export default function RootLayout({
         <footer className="bg-stone-900 text-stone-400 py-8 border-t border-stone-800 text-center text-sm">
           <div className="max-w-6xl mx-auto px-4">
             <p>© {new Date().getFullYear()} Sur les pas d'Aurore. Tous droits réservés.</p>
-            <p className="text-xs text-stone-500 mt-2">Contact</p>
+            <p className="text-xs text-stone-500 mt-2">Contact : Aurorefolk@gmail.com</p>
           </div>
         </footer>
       </body>
