@@ -37,12 +37,12 @@ export default async function AgendaPage() {
     return isNaN(d.getTime()) ? null : d;
   };
 
-  // 1. Filtrer les événements valides (pour supprimer les 2 fausses cases "Concert")
+  // 1. Filtrer les événements valides
   const evenementsValides = rawEvenements.filter(e => 
     e.titre && e.titre.trim() !== '' && e.titre !== 'Concert' && e.date && e.date.trim() !== ''
   );
 
-  // 2. Séparation Prochaines dates / Dates passées
+  // 2. DATES À VENIR : De la plus proche (récente) à la plus éloignée dans le futur
   const aVenir = evenementsValides
     .filter(e => {
       const d = parseEvtDate(e.date);
@@ -53,9 +53,10 @@ export default async function AgendaPage() {
     .sort((a, b) => {
       const dA = parseEvtDate(a.date)?.getTime() || 0;
       const dB = parseEvtDate(b.date)?.getTime() || 0;
-      return dA - dB;
+      return dA - dB; // Ordre chronologique croissant (futur proche -> futur lointain)
     });
 
+  // 3. DATES PASSÉES : De la plus récente (hier) à la plus vieille (il y a longtemps)
   const passes = evenementsValides
     .filter(e => {
       const d = parseEvtDate(e.date);
@@ -66,7 +67,7 @@ export default async function AgendaPage() {
     .sort((a, b) => {
       const dA = parseEvtDate(a.date)?.getTime() || 0;
       const dB = parseEvtDate(b.date)?.getTime() || 0;
-      return dB - dA;
+      return dB - dA; // Ordre anti-chronologique décroissant (passé récent -> passé ancien)
     });
 
   return (
