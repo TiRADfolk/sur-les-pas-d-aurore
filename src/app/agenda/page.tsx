@@ -3,39 +3,71 @@ import { getEvenements } from '@/lib/googleSheets';
 export const revalidate = 60;
 
 export default async function AgendaPage() {
-  const evenements = await getEvenements();
+  const rawEvenements = await getEvenements();
 
   // Date du jour (minuit)
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // Helper pour convertir une string de date de type YYYY-MM-DD en objet Date
-  const parseEvtDate = (dateStr: string) => {
-    if (!dateStr) return new Date(0);
-    // Gestion du format YYYY-MM-DD
-    const parts = dateStr.trim().split('-');
-    if (parts.length === 3) {
-      return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+  // Convertisseur universel de date (gère YYYY-MM-DD et DD/MM/YYYY)
+  const parseEvtDate = (dateStr: string): Date | null => {
+    if (!dateStr || dateStr.trim() === '' || dateStr === '...') return null;
+    const cleanStr = dateStr.trim();
+
+    // Format FR : DD/MM/YYYY ou DD-MM-YYYY
+    if (cleanStr.includes('/')) {
+      const parts = cleanStr.split('/');
+      if (parts.length === 3) {
+        return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+      }
     }
-    return new Date(dateStr);
+
+    // Format ISO : YYYY-MM-DD
+    if (cleanStr.includes('-')) {
+      const parts = cleanStr.split('-');
+      if (parts.length === 3 && parts[0].length === 4) {
+        return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+      }
+      if (parts.length === 3 && parts[2].length === 4) { // DD-MM-YYYY
+        return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+      }
+    }
+
+    const d = new Date(cleanStr);
+    return isNaN(d.getTime()) ? null : d;
   };
 
-  // Séparation automatique des dates
-  const aVenir = evenements
+  // 1. Filtrer les événements valides (pour supprimer les 2 fausses cases "Concert")
+  const evenementsValides = rawEvenements.filter(e => 
+    e.titre && e.titre.trim() !== '' && e.titre !== 'Concert' && e.date && e.date.trim() !== ''
+  );
+
+  // 2. Séparation Prochaines dates / Dates passées
+  const aVenir = evenementsValides
     .filter(e => {
       const d = parseEvtDate(e.date);
+      if (!d) return true; // Par défaut si date illisible, on garde en "A venir"
       d.setHours(0, 0, 0, 0);
       return d >= today;
     })
-    .sort((a, b) => parseEvtDate(a.date).getTime() - parseEvtDate(b.date).getTime());
+    .sort((a, b) => {
+      const dA = parseEvtDate(a.date)?.getTime() || 0;
+      const dB = parseEvtDate(b.date)?.getTime() || 0;
+      return dA - dB;
+    });
 
-  const passes = evenements
+  const passes = evenementsValides
     .filter(e => {
       const d = parseEvtDate(e.date);
+      if (!d) return false;
       d.setHours(0, 0, 0, 0);
       return d < today;
     })
-    .sort((a, b) => parseEvtDate(b.date).getTime() - parseEvtDate(a.date).getTime());
+    .sort((a, b) => {
+      const dA = parseEvtDate(a.date)?.getTime() || 0;
+      const dB = parseEvtDate(b.date)?.getTime() || 0;
+      return dB - dA;
+    });
 
   return (
     <div className="space-y-12">
@@ -62,8 +94,8 @@ export default async function AgendaPage() {
                 key={evt.id} 
                 className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden flex flex-col md:flex-row items-stretch hover:shadow-md transition-shadow"
               >
-                {/* A) PHOTO SUR LA GAUCHE */}
-                {evt.photoUrl && evt.photoUrl.trim() !== '' ? (
+                {/* PHOTO SUR LA GAUCHE */}
+                {evt.photoUrl && evt.photoUrl.trim() !== '' && evt.photoUrl !== '...' ? (
                   <div className="md:w-56 h-48 md:h-auto flex-shrink-0 relative bg-stone-100">
                     <img 
                       src={evt.photoUrl} 
@@ -77,10 +109,10 @@ export default async function AgendaPage() {
                   </div>
                 )}
 
-                {/* CONTENU DU CADRE (3 LIGNES + BOUTON) */}
+                {/* CONTENU DU CADRE */}
                 <div className="p-6 flex-1 flex flex-col justify-between gap-4">
                   <div className="space-y-2">
-                    {/* 1ère ligne : Date, Heure, Ville, Gratuit */}
+                    {/* Ligne 1 : Date, Ville, Gratuit */}
                     <div className="flex flex-wrap items-center gap-2 text-sm">
                       <span className="font-bold text-amber-700 bg-amber-50 px-3 py-1 rounded-md border border-amber-200">
                         🗓️ {evt.date} {evt.heure && `à ${evt.heure}`}
@@ -97,13 +129,13 @@ export default async function AgendaPage() {
                       )}
                     </div>
 
-                    {/* 2ème ligne : Titre */}
+                    {/* Ligne 2 : Titre */}
                     <h3 className="text-2xl font-bold text-stone-900 pt-1">
                       {evt.titre}
                     </h3>
 
-                    {/* 3ème ligne : Description */}
-                    {evt.description && (
+                    {/* Ligne 3 : Description */}
+                    {evt.description && evt.description !== '...' && (
                       <p className="text-stone-600 text-sm leading-relaxed whitespace-pre-line pt-1">
                         {evt.description}
                       </p>
@@ -111,7 +143,7 @@ export default async function AgendaPage() {
                   </div>
 
                   {/* BOUTON LIEN CLIQUABLE */}
-                  {evt.lienBilletterie && (
+                  {evt.lienBilletterie && evt.lienBilletterie.trim() !== '' && evt.lienBilletterie !== '...' && (
                     <div className="pt-2">
                       <a 
                         href={evt.lienBilletterie} 
@@ -137,7 +169,7 @@ export default async function AgendaPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 opacity-75">
             {passes.map((evt) => (
               <div key={evt.id} className="bg-stone-100 rounded-xl p-4 border border-stone-200 flex gap-4 items-center">
-                {evt.photoUrl && (
+                {evt.photoUrl && evt.photoUrl.trim() !== '' && evt.photoUrl !== '...' && (
                   <img src={evt.photoUrl} alt={evt.titre} className="w-16 h-16 rounded-lg object-cover flex-shrink-0" />
                 )}
                 <div>
